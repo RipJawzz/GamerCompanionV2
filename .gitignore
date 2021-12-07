@@ -1,1 +1,4 @@
 gcenv
+GC.txt
+backend/MLengine
+frontend/android/app/google-services.json
