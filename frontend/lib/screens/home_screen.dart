@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/Widgets/error_widget.dart';
+import 'package:frontend/Widgets/misc_widgets.dart';
+import 'package:frontend/screens/games_library.dart';
 import 'package:frontend/models/user.dart';
+import 'package:frontend/screens/social_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key, required this.currUser}) : super(key: key);
@@ -11,13 +13,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String screen = "main";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(titleSwitch(screen)),
       ),
-      body: screenSwitch(screen),
+      body: screenSwitch(screen, widget.currUser),
       drawer: Drawer(
         child: ListView(
           children: [
@@ -25,38 +28,41 @@ class _HomeScreenState extends State<HomeScreen> {
               image: AssetImage("assets/images/general/drawer.png"),
             ),
             div(),
-            ListTile(
-              leading: drawerIcons(Icons.add),
-              title: drawerOptions("Add?"),
-              onTap: () {
-                screen = "add";
-                setState(() {});
-                Navigator.pop(context);
-              },
-            ),
+            drawerTile("Games Library", Icons.games),
             div(),
-            ListTile(
-              leading: drawerIcons(Icons.games),
-              title: drawerOptions("Library"),
-              onTap: () {
-                screen = "Library";
-                setState(() {});
-                Navigator.pop(context);
-              },
-            ),
+            drawerTile("Recommender", Icons.local_fire_department),
             div(),
-            ListTile(
-              leading: drawerIcons(Icons.settings),
-              title: drawerOptions("Settings"),
-              onTap: () {
-                screen = "Settings";
-                setState(() {});
-                Navigator.pop(context);
-              },
-            ),
+            drawerTile("Socials", Icons.person),
+            div(),
+            drawerTile("Messages", Icons.message),
+            div(),
+            drawerTile("Settings", Icons.settings),
           ],
         ),
       ),
+    );
+  }
+
+  Widget drawerTile(String screenName, var icon) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        size: 20,
+        color: Colors.white,
+      ),
+      title: Text(
+        screenName,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      onTap: () {
+        screen = screenName;
+        setState(() {});
+        Navigator.pop(context);
+      },
     );
   }
 }
@@ -64,48 +70,40 @@ class _HomeScreenState extends State<HomeScreen> {
 String titleSwitch(String screen) {
   switch (screen) {
     case "main":
-      return "Landing";
-    case "add":
-      return "Adding";
+      return "Welcome!";
+    case "Games Library":
+      return screen;
+    case "Recommender":
+      return screen;
+    case "Socials":
+      return screen;
+    case "Messages":
+      return screen;
+    case "Settings":
+      return screen;
     default:
-      return "Weird Stuff";
+      return "Huh! This is weird.";
   }
 }
 
-Widget screenSwitch(String screen) {
+Widget screenSwitch(String screen, user currUser) {
   switch (screen) {
     case "main":
       return const Text(
         "Landing Page",
         style: TextStyle(color: Colors.white),
       );
-    case "add":
-      return const ErrorDisplay();
-    default:
-      return const Text(
-        "Shouldnt have happened",
-        style: TextStyle(color: Colors.white),
+    case "Games Library":
+      return GamesLibrary(
+        currUser: currUser,
       );
+    case "Socials":
+      return SocialPage(
+        currUser: currUser,
+      );
+    default:
+      return const ComingSoon();
   }
-}
-
-Widget drawerOptions(String content) {
-  return Text(
-    content,
-    style: const TextStyle(
-      color: Colors.white,
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-    ),
-  );
-}
-
-Icon drawerIcons(var selected) {
-  return Icon(
-    selected,
-    size: 20,
-    color: Colors.white,
-  );
 }
 
 Widget div() {

@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/Firebase/database.dart';
+import 'package:frontend/screens/auth_screen_flutter.dart';
 import 'package:frontend/screens/auth_wrap.dart';
 
 void main() async {
@@ -20,7 +22,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.black,
         canvasColor: Colors.grey[850],
       ),
-      home: const AuthWrapper(),
+      //home: const AuthWrapper(),
+      home: FlutterLoginScreen(),
     );
   }
 }

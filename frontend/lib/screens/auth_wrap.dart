@@ -31,23 +31,62 @@ class _AuthWrapperState extends State<AuthWrapper> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     TextButton(
-                        onPressed: () async {
-                          user? authenticatedUser =
-                              await Authentication().signInAnonymously();
-                          if (authenticatedUser == null) {
-                            print("Auth error");
-                          } else if (authenticatedUser != null) {
-                            print("signed in");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => HomeScreen(
-                                        currUser: authenticatedUser,
-                                      )),
-                            );
-                          }
-                        },
-                        child: const Text("Anonymous Signin"))
+                      onPressed: () async {
+                        user? authenticatedUser =
+                            await Authentication().signInAnonymously();
+                        if (authenticatedUser == null) {
+                          print("Auth error");
+                        } else if (authenticatedUser != null) {
+                          print("signed in");
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => HomeScreen(
+                                      currUser: authenticatedUser,
+                                    )),
+                          );
+                        }
+                      },
+                      child: const Text("Anonymous Signin"),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        user? authenticatedUser =
+                            await Authentication().createAccEmailPwd();
+                        if (authenticatedUser == null) {
+                          print("Auth error");
+                        } else if (authenticatedUser != null) {
+                          print("signed in");
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => HomeScreen(
+                                      currUser: authenticatedUser,
+                                    )),
+                          );
+                        }
+                      },
+                      child: Text("Sign Up"),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        user? authenticatedUser =
+                            await Authentication().signInEmailPwd();
+                        if (authenticatedUser == null) {
+                          print("Auth error");
+                        } else if (authenticatedUser != null) {
+                          print("signed in");
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => HomeScreen(
+                                      currUser: authenticatedUser,
+                                    )),
+                          );
+                        }
+                      },
+                      child: Text("Log In"),
+                    ),
                   ],
                 ),
               ),

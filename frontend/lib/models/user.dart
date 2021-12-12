@@ -1,9 +1,9 @@
 class user {
   final String uid;
-  late String name;
+  late String name, email;
   final bool anonymous;
-  late String email;
+  int factor = 1;
   Set<int> likedGames = {};
-  Set<int> dislikedGames = {};
+  Set<String> following = {};
   user({required this.uid, required this.anonymous});
 }
