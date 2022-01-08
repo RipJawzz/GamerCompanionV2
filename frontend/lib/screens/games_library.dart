@@ -1,27 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/Firebase/database.dart';
+import 'package:frontend/Shared/constants.dart';
 import 'package:frontend/Widgets/game_tile.dart';
 import 'package:frontend/Widgets/misc_widgets.dart';
 import 'package:frontend/models/game.dart';
 import 'package:frontend/models/user.dart';
-import 'package:frontend/screens/home_screen.dart';
 
+// ignore: must_be_immutable
 class GamesLibrary extends StatefulWidget {
-  GamesLibrary({Key? key, required this.currUser}) : super(key: key);
+  GamesLibrary({Key? key, required this.currUser, required this.completeList})
+      : super(key: key);
   user currUser;
+  List<Game> completeList;
   @override
   _GamesLibraryState createState() => _GamesLibraryState();
 }
 
 class _GamesLibraryState extends State<GamesLibrary> {
-  String tab = "allGames";
-
-  Future<List<Game>?> listSwitcher() {
+  String tab = "allGames", searchSubstr = "";
+  bool search = false;
+  List<Game> reqList = [];
+  List<Game> listModifier() {
+    List<Game> initialScreening = [];
+    if (search) {
+      for (var game in widget.completeList) {
+        if (game.name.toLowerCase().contains(searchSubstr.toLowerCase())) {
+          initialScreening.add(game);
+        }
+      }
+    } else {
+      initialScreening = widget.completeList;
+    }
+    List<Game> temp = [];
     switch (tab) {
       case "likedGames":
-        return Database().gameListFromSnapshot(widget.currUser.likedGames);
+        for (var game in initialScreening) {
+          if (widget.currUser.likedGames.contains(game.id)) {
+            temp.add(game);
+          }
+        }
+        return temp;
       default:
-        return Database().gameListFromSnapshot();
+        return temp = initialScreening;
     }
   }
 
@@ -31,12 +50,20 @@ class _GamesLibraryState extends State<GamesLibrary> {
         tab = title;
         setState(() {});
       },
-      child: Text(
-        title,
-        style: TextStyle(
-          color: tab == title ? Colors.black : Colors.white,
-          backgroundColor:
-              tab == title ? Colors.white : Theme.of(context).backgroundColor,
+      child: Container(
+        padding: const EdgeInsets.all(8.0),
+        margin: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(
+              Radius.circular(15.0),
+            ),
+            color:
+                tab == title ? Colors.white : Theme.of(context).primaryColor),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: tab == title ? Colors.black : Colors.white,
+          ),
         ),
       ),
     );
@@ -48,48 +75,51 @@ class _GamesLibraryState extends State<GamesLibrary> {
 
   @override
   Widget build(BuildContext context) {
-    Future<List<Game>?> gamesList = listSwitcher();
+    reqList = listModifier();
     return Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        if (search)
+          Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: TextField(
+              decoration: textInputDecoration,
+              cursorColor: Colors.white,
+              onChanged: (text) {
+                setState(() {
+                  searchSubstr = text;
+                });
+              },
+            ),
+          ),
         Flexible(
-          child: FutureBuilder(
-            future: gamesList,
-            builder:
-                (BuildContext context, AsyncSnapshot<List<Game>?> snapshot) {
-              if (snapshot.hasData) {
-                if (snapshot.data!.isEmpty) {
-                  return const EmptyPage();
-                }
-                return ListView.builder(
-                    itemCount: snapshot.data!.length,
+            child: (reqList.isEmpty)
+                ? const EmptyPage()
+                : ListView.builder(
+                    itemCount: reqList.length,
                     itemBuilder: (BuildContext context, index) {
                       return GameTile(
-                        game: snapshot.data![index],
+                        game: reqList[index],
                         currUser: widget.currUser,
                         trigger: trigger,
                       );
-                    });
-              } else if (snapshot.hasError) {
-                return const ErrorDisplay();
-              } else {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    backgroundColor: Colors.black,
-                    color: Colors.blue,
-                  ),
-                );
-              }
-            },
-          ),
-        ),
+                    })),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           mainAxisSize: MainAxisSize.max,
           children: [
             navSwitch("allGames"),
             navSwitch("likedGames"),
+            IconButton(
+                onPressed: () {
+                  setState(() {
+                    search = !search;
+                    searchSubstr = "";
+                  });
+                },
+                icon: Icon(Icons.search,
+                    color: search ? Colors.red : Colors.green)),
           ],
         ),
       ],

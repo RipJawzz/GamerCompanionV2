@@ -1,6 +1,12 @@
 class Game {
   final int id;
-  final String description, name;
+  final String description, name, tags;
   String url;
-  Game(this.id, this.name, this.description, this.url);
+  String? score;
+  Game(
+      {required this.id,
+      required this.name,
+      required this.description,
+      required this.url,
+      required this.tags});
 }

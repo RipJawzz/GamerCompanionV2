@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ErrorDisplay extends StatelessWidget {
   const ErrorDisplay({Key? key}) : super(key: key);
@@ -57,4 +60,46 @@ class EmptyPage extends StatelessWidget {
       ],
     );
   }
+}
+
+class LoadingWidget extends StatelessWidget {
+  const LoadingWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SpinKitSpinningLines(
+          itemCount: 10,
+          size: 200,
+          color: Theme.of(context).colorScheme.secondary,
+        ),
+      ],
+    );
+  }
+}
+
+List<Widget> genreListGen(List<String> genres) {
+  List<Widget> fin = [];
+  for (var g in genres) {
+    fin.add(Container(
+      padding: const EdgeInsets.all(5),
+      margin: const EdgeInsets.all(5),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.all(
+          Radius.circular(10.0),
+        ),
+      ),
+      child: Center(
+        child: Text(
+          g,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+        ),
+      ),
+    ));
+  }
+  return fin;
 }

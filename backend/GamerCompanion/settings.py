@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
+import django_heroku
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-)ec0lu7j8609sv7^%m5=$mcw&2%og986k$^v-7n2b9lj=+dom&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['gamer-companion.herokuapp.com']
 
 
 # Application definition
@@ -75,12 +76,12 @@ WSGI_APPLICATION = 'GamerCompanion.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-'''DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}'''
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 DATABASES = {
    'default': {
@@ -92,6 +93,19 @@ DATABASES = {
        'PORT': '5432',
    }
 }
+
+'''DATABASES = {
+   'default': {
+       'ENGINE': 'django.db.backends.postgresql_psycopg2',
+       'NAME': 'd321sat26n4qqi',
+       'USER': 'zuqawfrczbhbth',
+       'PASSWORD': 'a86c0c766a220e2bf8687f1d6559ddcf111c47cea012ec514d2a19bc1da9cf44',
+       'HOST': 'ec2-52-50-171-4.eu-west-1.compute.amazonaws.com',
+       'PORT': '5432',
+   }
+}'''
+
+
 
 
 # Password validation
@@ -130,8 +144,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+STATIC_URL = '/static/'
+django_heroku.settings(locals())
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 

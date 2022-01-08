@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
+import 'package:frontend/API/django_api.dart';
 import 'package:frontend/Firebase/database.dart';
 import 'dart:async';
 
@@ -15,35 +14,43 @@ class Authentication {
       UserCredential userCredential = await _auth.signInAnonymously();
       return user(uid: userCredential.user!.uid, anonymous: true);
     } catch (e) {
-      print(e);
       return null;
     }
   }
 
-  Future<user?> createAccEmailPwd([String? email, String? password]) async {
-    email ??= "bignubz@gmail.com";
-    password ??= "MyHyperSEcretpwd";
+  Future<user> createAccEmailPwd(
+      String email, String password, String name) async {
+    user curr;
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
-      return Database().addNewUserFireStore(userCredential.user!.uid, email);
+
+      createUser(userCredential.user!.uid);
+
+      curr = await Database()
+          .addNewUserFireStore(userCredential.user!.uid, email, name);
+      return curr;
     } catch (e) {
-      print(e);
-      return null;
+      curr = user(uid: "0", anonymous: false);
+      curr.name = null;
+      curr.email = e.toString();
+      return curr;
     }
   }
 
-  Future<user?> signInEmailPwd([String? email, String? password]) async {
-    email ??= "bignubz@gmail.com";
-    password ??= "MyHyperSEcretpwd";
+  Future<user> signInEmailPwd(String email, String password) async {
+    user curr;
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      return await Database()
-          .userFromFireStore(userCredential.user!.uid, false);
+      curr =
+          await Database().userFromFireStore(userCredential.user!.uid, false);
+      return curr;
     } catch (e) {
-      print(e);
-      return null;
+      curr = user(uid: "0", anonymous: false);
+      curr.name = null;
+      curr.email = e.toString();
+      return curr;
     }
   }
 
@@ -52,7 +59,6 @@ class Authentication {
       await _auth.signOut();
       return "Success";
     } catch (e) {
-      print(e.toString());
       return null;
     }
   }

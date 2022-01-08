@@ -38,8 +38,16 @@ dependencies:
   cupertino_icons: ^1.0.2
   cached_network_image: ^3.2.0
   flutter_login: ^3.0.0
+  google_fonts: ^2.1.0
+  shared_preferences: ^2.0.11
+  flutter_spinkit: ^5.1.0
+  flutter_launcher_icons: ^0.9.2
   
-  
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/general/razer.png"
+  remove_alpha_ios: true
   
 
 dev_dependencies:

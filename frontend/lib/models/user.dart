@@ -1,8 +1,9 @@
+// ignore: camel_case_types
 class user {
   final String uid;
-  late String name, email;
+  String? name, email;
   final bool anonymous;
-  int factor = 1;
+  int factor = 40;
   Set<int> likedGames = {};
   Set<String> following = {};
   user({required this.uid, required this.anonymous});

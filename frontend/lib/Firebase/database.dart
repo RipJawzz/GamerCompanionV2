@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-import 'package:flutter/foundation.dart';
 import 'package:frontend/models/game.dart';
-import 'package:frontend/models/otherUsers.dart';
+import 'package:frontend/models/other_users.dart';
 import 'package:frontend/models/user.dart';
 
 class Database {
@@ -13,14 +12,6 @@ class Database {
   CollectionReference gameData =
       FirebaseFirestore.instance.collection('GameData');
 
-  void tryCreating() {
-    for (int i = 1; i <= 21; ++i) {
-      gameData
-          .doc(i.toString())
-          .set({"id": 0, "name": "", "description": "", "metacritic": 0});
-    }
-  }
-
   Future<void> updategameListFromSnapshot() async {
     for (int i = 1; i <= 21; ++i) {
       String url = await gameImageUrlGen(i);
@@ -28,29 +19,57 @@ class Database {
     }
   }
 
-  Future<user?> addNewUserFireStore(String uid, String email) async {
+  Future<user> addNewUserFireStore(
+      String uid, String email, String name) async {
+    user nwUser = user(uid: uid, anonymous: false);
     try {
       await userData.doc(uid).set({
         "likedGames": [],
-        "name": email.split("@")[0],
+        "name": name,
         "email": email,
-        "following": []
+        "following": [],
+        "factor": 40,
       });
-      user nwUser = user(uid: uid, anonymous: false);
+      nwUser.name = name;
       nwUser.email = email;
       return nwUser;
     } catch (e) {
-      debugPrint(e.toString());
-      return null;
+      nwUser.name = null;
+      nwUser.email = e.toString();
+      return nwUser;
     }
   }
 
-  void updateUserDoc(
-    user currUser,
-  ) async {
-    userData.doc(currUser.uid.toString()).update({
-      "likedGames": currUser.likedGames.toList(),
-    });
+  Future<user> userFromFireStore(String uid, bool anonymous) async {
+    user signedIn = user(uid: uid, anonymous: anonymous);
+    try {
+      DocumentSnapshot doc = await userData.doc(uid).get();
+
+      if (!anonymous) {
+        signedIn.likedGames = doc["likedGames"].cast<int>().toSet();
+        signedIn.email = doc["email"];
+        signedIn.name = doc["name"];
+        signedIn.factor = doc["factor"] as int;
+        signedIn.following = doc["following"].cast<String>().toSet();
+      }
+      return signedIn;
+    } catch (e) {
+      signedIn.name = null;
+      signedIn.email = e.toString();
+      return signedIn;
+    }
+  }
+
+  Future<bool> updateUserFactor(user currUser) async {
+    try {
+      await userData.doc(currUser.uid.toString()).update({
+        "factor": currUser.factor,
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+    ;
   }
 
   void updateUserLikedGames(user currUser) async {
@@ -65,50 +84,24 @@ class Database {
         .update({"following": currUser.following.toList()});
   }
 
-  Future<List<OtherUser>?> otherUsersListFromFireStore(String uid,
-      [Set<String>? tp]) async {
+  Future<List<OtherUser>?> otherUsersListFromFireStore(String uid) async {
     try {
       List<OtherUser> req = [];
       await userData.get().then((QuerySnapshot querySnapshot) async {
-        if (tp == null) {
-          for (var doc in querySnapshot.docs) {
-            if (doc.id != uid) {
-              req.add(OtherUser(
-                  uid: doc.id,
-                  name: doc["name"],
-                  email: doc["email"],
-                  likedGames: doc["likedGames"].cast<int>().toSet()));
-            }
-          }
-        } else {
-          for (var doc in querySnapshot.docs) {
-            if (doc.id != uid && tp.contains(doc.id)) {
-              req.add(OtherUser(
-                  uid: doc.id,
-                  name: doc["name"],
-                  email: doc["email"],
-                  likedGames: doc["likedGames"].cast<int>().toSet()));
-            }
+        for (var doc in querySnapshot.docs) {
+          if (doc.id != uid) {
+            req.add(OtherUser(
+                uid: doc.id,
+                name: doc["name"],
+                email: doc["email"],
+                likedGames: doc["likedGames"].cast<int>().toSet()));
           }
         }
       });
       return req;
     } on Exception catch (e) {
-      print(e);
       return null;
     }
-  }
-
-  Future<user> userFromFireStore(String uid, bool anonymous) async {
-    DocumentSnapshot doc = await userData.doc(uid).get();
-    user signedIn = user(uid: uid, anonymous: anonymous);
-    if (!anonymous) {
-      signedIn.likedGames = doc["likedGames"].cast<int>().toSet();
-      signedIn.email = doc["email"];
-      signedIn.name = doc["name"];
-      signedIn.following = doc["following"].cast<String>().toSet();
-    }
-    return signedIn;
   }
 
   Future<List<Game>?> gameListFromSnapshot([Set<int>? tp]) async {
@@ -117,14 +110,22 @@ class Database {
       await gameData.get().then((QuerySnapshot querySnapshot) async {
         if (tp == null) {
           for (var doc in querySnapshot.docs) {
-            req.add(
-                Game(doc["id"], doc["name"], doc["description"], doc["url"]));
+            req.add(Game(
+                id: doc["id"],
+                name: doc["name"],
+                description: doc["description"],
+                url: doc["url"],
+                tags: doc["tags"]));
           }
         } else {
           for (var doc in querySnapshot.docs) {
             if (tp.contains(doc["id"] as int)) {
-              req.add(
-                  Game(doc["id"], doc["name"], doc["description"], doc["url"]));
+              req.add(Game(
+                  id: doc["id"],
+                  name: doc["name"],
+                  description: doc["description"],
+                  url: doc["url"],
+                  tags: doc["tags"]));
             }
           }
         }
@@ -132,6 +133,46 @@ class Database {
       return req;
     } on Exception catch (e) {
       return null;
+    }
+  }
+
+  Future<List<Game>?> recommendationListFromSnapshot(
+      List<dynamic> data, Set<int> likedGames) async {
+    try {
+      List<Game> req = [];
+      var max = data[data.length - 1][1];
+      for (var ar in data) {
+        int id = ar[0].round();
+        if (!likedGames.contains(id)) {
+          DocumentSnapshot doc = await gameData.doc(id.toString()).get();
+          Game temp = Game(
+              id: doc["id"],
+              name: doc["name"],
+              description: doc["description"],
+              url: doc["url"],
+              tags: doc["tags"]);
+          temp.score = (100 - ar[1] * 100 / max).round().toString();
+          req.add(temp);
+        }
+      }
+      return req;
+    } on Exception catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
+  Future<void> setFireStoreGameData(List<dynamic> data) async {
+    int l = 1, r = 21;
+    for (var ar in data) {
+      int id = ar[2];
+      gameData.doc(id.toString()).set({
+        "id": id,
+        "name": ar[0],
+        "tags": ar[1],
+        if (id >= l && id <= r) "description": "",
+        "url": await gameImageUrlGen(id),
+      });
     }
   }
 

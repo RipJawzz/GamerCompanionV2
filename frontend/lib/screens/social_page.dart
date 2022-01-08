@@ -1,27 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/Firebase/database.dart';
+import 'package:frontend/Shared/constants.dart';
 import 'package:frontend/Widgets/misc_widgets.dart';
 import 'package:frontend/Widgets/user_tile.dart';
-import 'package:frontend/models/otherUsers.dart';
+import 'package:frontend/models/other_users.dart';
 import 'package:frontend/models/user.dart';
 
+// ignore: must_be_immutable
 class SocialPage extends StatefulWidget {
-  SocialPage({Key? key, required this.currUser}) : super(key: key);
+  SocialPage({Key? key, required this.currUser, required this.completeList})
+      : super(key: key);
   user currUser;
+  List<OtherUser> completeList;
   @override
   _SocialPageState createState() => _SocialPageState();
 }
 
 class _SocialPageState extends State<SocialPage> {
-  String tab = "All Users";
-
-  Future<List<OtherUser>?> listSwitcher() {
+  String tab = "All Users", searchSubstr = "";
+  bool search = false;
+  List<OtherUser> reqList = [];
+  List<OtherUser> listModifier() {
+    List<OtherUser> initialScreening = [];
+    if (search) {
+      for (var userItr in widget.completeList) {
+        if (userItr.name.toLowerCase().contains(searchSubstr.toLowerCase())) {
+          initialScreening.add(userItr);
+        }
+      }
+    } else {
+      initialScreening = widget.completeList;
+    }
+    List<OtherUser> temp = [];
     switch (tab) {
       case "Following":
-        return Database().otherUsersListFromFireStore(
-            widget.currUser.uid, widget.currUser.following);
+        for (var userItr in initialScreening) {
+          if (widget.currUser.following.contains(userItr.uid)) {
+            temp.add(userItr);
+          }
+        }
+        return temp;
       default:
-        return Database().otherUsersListFromFireStore(widget.currUser.uid);
+        return temp = initialScreening;
     }
   }
 
@@ -31,12 +50,20 @@ class _SocialPageState extends State<SocialPage> {
         tab = title;
         setState(() {});
       },
-      child: Text(
-        title,
-        style: TextStyle(
-          color: tab == title ? Colors.black : Colors.white,
-          backgroundColor:
-              tab == title ? Colors.white : Theme.of(context).backgroundColor,
+      child: Container(
+        padding: const EdgeInsets.all(8.0),
+        margin: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(
+              Radius.circular(15.0),
+            ),
+            color:
+                tab == title ? Colors.white : Theme.of(context).primaryColor),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: tab == title ? Colors.black : Colors.white,
+          ),
         ),
       ),
     );
@@ -48,47 +75,50 @@ class _SocialPageState extends State<SocialPage> {
 
   @override
   Widget build(BuildContext context) {
-    Future<List<OtherUser>?> otherUserList = listSwitcher();
+    reqList = listModifier();
     return Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        if (search)
+          Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: TextField(
+              decoration: textInputDecoration,
+              cursorColor: Colors.white,
+              onChanged: (text) {
+                setState(() {
+                  searchSubstr = text;
+                });
+              },
+            ),
+          ),
         Flexible(
-          child: FutureBuilder(
-            future: otherUserList,
-            builder: (BuildContext context,
-                AsyncSnapshot<List<OtherUser>?> snapshot) {
-              if (snapshot.hasData) {
-                if (snapshot.data!.isEmpty) {
-                  return const EmptyPage();
-                }
-                return ListView.builder(
-                    itemCount: snapshot.data!.length,
+            child: (reqList.isEmpty)
+                ? const EmptyPage()
+                : ListView.builder(
+                    itemCount: reqList.length,
                     itemBuilder: (BuildContext context, index) {
                       return UserTile(
-                          selectedUser: snapshot.data![index],
+                          selectedUser: reqList[index],
                           currUser: widget.currUser,
                           trigger: trigger);
-                    });
-              } else if (snapshot.hasError) {
-                return const ErrorDisplay();
-              } else {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    backgroundColor: Colors.black,
-                    color: Colors.blue,
-                  ),
-                );
-              }
-            },
-          ),
-        ),
+                    })),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           mainAxisSize: MainAxisSize.max,
           children: [
             navSwitch("All Users"),
             navSwitch("Following"),
+            IconButton(
+                onPressed: () {
+                  setState(() {
+                    search = !search;
+                    searchSubstr = "";
+                  });
+                },
+                icon: Icon(Icons.search,
+                    color: search ? Colors.red : Colors.green)),
           ],
         ),
       ],

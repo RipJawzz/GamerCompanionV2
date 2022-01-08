@@ -1,14 +1,20 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/API/django_api.dart';
 import 'package:frontend/Firebase/database.dart';
+import 'package:frontend/Widgets/misc_widgets.dart';
 import 'package:frontend/models/game.dart';
 import 'package:frontend/models/user.dart';
 
+// ignore: must_be_immutable
 class GamePage extends StatefulWidget {
   GamePage({Key? key, required this.game, required this.currUser})
       : super(key: key);
   final Game game;
   user currUser;
+
   @override
   _GamePageState createState() => _GamePageState();
 }
@@ -20,7 +26,8 @@ class _GamePageState extends State<GamePage> {
       appBar: AppBar(
         title: Text(widget.game.name),
       ),
-      body: ListView(
+      body: Column(
+        mainAxisSize: MainAxisSize.max,
         children: [
           Hero(
             tag: "gameImage/" + widget.game.id.toString(),
@@ -31,9 +38,27 @@ class _GamePageState extends State<GamePage> {
               errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
           ),
-          Container(
-            color: Colors.grey,
-            child: Text(widget.game.description),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: genreListGen(widget.game.tags.split("|")),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  child: Text(
+                    widget.game.description,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400),
+                  ),
+                ),
+              ],
+            ),
           ),
           Container(
             color: Colors.grey[950],
@@ -49,6 +74,8 @@ class _GamePageState extends State<GamePage> {
                     } else {
                       widget.currUser.likedGames.add(id);
                     }
+                    toggleGamePref(widget.currUser, id,
+                        widget.currUser.likedGames.contains(id));
                     Database().updateUserLikedGames(widget.currUser);
                     setState(() {});
                   },

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/Widgets/misc_widgets.dart';
-import 'package:frontend/screens/games_library.dart';
+import 'package:frontend/screens/game_lib_data_load.dart';
 import 'package:frontend/models/user.dart';
-import 'package:frontend/screens/social_page.dart';
+import 'package:frontend/screens/landing_page.dart';
+import 'package:frontend/screens/recommender_screen.dart';
+import 'package:frontend/screens/settings_screen.dart';
+import 'package:frontend/screens/socials_data_load.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key, required this.currUser}) : super(key: key);
@@ -16,28 +19,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(titleSwitch(screen)),
-      ),
-      body: screenSwitch(screen, widget.currUser),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            const Image(
-              image: AssetImage("assets/images/general/drawer.png"),
-            ),
-            div(),
-            drawerTile("Games Library", Icons.games),
-            div(),
-            drawerTile("Recommender", Icons.local_fire_department),
-            div(),
-            drawerTile("Socials", Icons.person),
-            div(),
-            drawerTile("Messages", Icons.message),
-            div(),
-            drawerTile("Settings", Icons.settings),
-          ],
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushReplacementNamed(context, "/");
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(titleSwitch(screen)),
+        ),
+        body: screenSwitch(screen, widget.currUser),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              const Image(
+                image: AssetImage("assets/images/general/drawer.png"),
+              ),
+              div(),
+              drawerTile("Games Library", Icons.games),
+              div(),
+              drawerTile("Recommender", Icons.local_fire_department),
+              div(),
+              drawerTile("Socials", Icons.person),
+              div(),
+              drawerTile("Messages", Icons.message),
+              div(),
+              drawerTile("Settings", Icons.settings),
+            ],
+          ),
         ),
       ),
     );
@@ -89,16 +98,21 @@ String titleSwitch(String screen) {
 Widget screenSwitch(String screen, user currUser) {
   switch (screen) {
     case "main":
-      return const Text(
-        "Landing Page",
-        style: TextStyle(color: Colors.white),
-      );
+      return const LandingPage();
     case "Games Library":
-      return GamesLibrary(
+      return GameLibraryDataLoadScreen(
+        currUser: currUser,
+      );
+    case "Recommender":
+      return RecommenderScreen(
         currUser: currUser,
       );
     case "Socials":
-      return SocialPage(
+      return SocialsDataLoadScreen(
+        currUser: currUser,
+      );
+    case "Settings":
+      return SettingsScreen(
         currUser: currUser,
       );
     default:

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/Firebase/database.dart';
 import 'package:frontend/models/game.dart';
-import 'package:frontend/models/otherUsers.dart';
+import 'package:frontend/models/other_users.dart';
 import 'package:frontend/models/user.dart';
 
 import 'game_tile.dart';
 import 'misc_widgets.dart';
 
+// ignore: must_be_immutable
 class UserPage extends StatefulWidget {
   UserPage({Key? key, required this.currUser, required this.selectedUser})
       : super(key: key);
@@ -17,9 +18,7 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<UserPage> {
-  void trigger() {
-    setState(() {});
-  }
+  void trigger() {}
 
   @override
   Widget build(BuildContext context) {
