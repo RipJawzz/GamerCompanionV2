@@ -62,4 +62,17 @@ class Authentication {
       return null;
     }
   }
+
+  Future<String?> deleteUser() async {
+    try {
+      await _auth.currentUser!.delete();
+      return null;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        print(
+            'The user must reauthenticate before this operation can be executed.');
+      }
+      return e.code;
+    }
+  }
 }

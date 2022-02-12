@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/API/django_api.dart';
 import 'package:frontend/Firebase/database.dart';
+import 'package:frontend/Widgets/misc_widgets.dart';
 import 'package:frontend/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend/Firebase/authentication.dart';
 
 // ignore: must_be_immutable
 class SettingsScreen extends StatefulWidget {
@@ -47,17 +50,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               .updateUserFactor(widget.currUser);
 
                           if (fin) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                  "Pref updated to ${widget.currUser.factor}!"),
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.secondary,
-                            ));
+                            infoSnackBar(
+                                "Pref updated to ${widget.currUser.factor}!",
+                                context);
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: const Text("Pref updating failed."),
-                              backgroundColor: Theme.of(context).errorColor,
-                            ));
+                            errorSnackBar("Pref updating failed.", context);
                           }
                         },
                         child: Text("Set ${widget.currUser.factor}")),
@@ -89,31 +86,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
           decoration: BoxDecoration(
               color: Colors.grey[900],
               borderRadius: const BorderRadius.all(Radius.circular(15.0))),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8.0),
-                margin: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                    color: Colors.grey[900],
-                    borderRadius:
-                        const BorderRadius.all(Radius.circular(15.0))),
-                child: TextButton(
-                  onPressed: () async {
-                    SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    await prefs.setBool('saved', false);
-                    Navigator.pushReplacementNamed(context, "/");
-                  },
-                  child: const Text(
-                    "Logout",
-                    style: TextStyle(fontSize: 20),
-                  ),
-                ),
-              ),
-            ],
+          child: TextButton(
+            onPressed: () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('saved', false);
+              Navigator.pushReplacementNamed(context, "/");
+            },
+            child: const Text(
+              "Logout",
+              style: TextStyle(fontSize: 20),
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(8.0),
+          margin: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+              color: Colors.grey[900],
+              borderRadius: const BorderRadius.all(Radius.circular(15.0))),
+          child: TextButton(
+            onPressed: () async {
+              String? res = await Authentication().deleteUser();
+              if (res == null) await Database().removeUser(widget.currUser.uid);
+              deleteUser(widget.currUser.uid);
+              if (res == null) {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('saved', false);
+                Navigator.pushReplacementNamed(context, "/");
+              } else {
+                errorSnackBar(res, context);
+              }
+            },
+            child: const Text(
+              "Delete Account",
+              style: TextStyle(fontSize: 20, color: Colors.red),
+            ),
           ),
         ),
       ],

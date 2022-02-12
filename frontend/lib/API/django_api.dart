@@ -26,6 +26,16 @@ Future<void> createUser(String firebaseID) async {
   }
 }
 
+Future<void> deleteUser(String firebaseID) async {
+  await http.put(
+    Uri.parse(creds.apiPath + '/deleteUser'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, dynamic>{"firebaseID": firebaseID}),
+  );
+}
+
 Future<void> toggleGamePref(user curr, int gameID, bool add) async {
   bool pending = true;
   while (pending) {

@@ -67,6 +67,20 @@ def userCreate(request):
         return Response({"message" : "Problem Creating user"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["PUT"])
+def userDelete(request):
+    if request.method=="PUT":
+        fid = request.data["firebaseID"]
+        try:
+            rec = User.objects.get(fid)
+            print(rec)
+            rec.delete()
+            return Response({"message" : "Success"},status.HTTP_200_OK)
+        except:
+            print("Tough Luck")
+        return Response({"message" : "LOL"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
 def toggleGamePref(request,op):
     
     if request.method=="PUT":

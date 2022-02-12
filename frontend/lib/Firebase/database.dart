@@ -40,6 +40,14 @@ class Database {
     }
   }
 
+  Future<String?> removeUser(String uid) async {
+    return userData
+        .doc(uid)
+        .delete()
+        .then((value) => null)
+        .catchError((e) => "Error deleting user");
+  }
+
   Future<user> userFromFireStore(String uid, bool anonymous) async {
     user signedIn = user(uid: uid, anonymous: anonymous);
     try {
@@ -162,17 +170,18 @@ class Database {
   }
 
   Future<void> setFireStoreGameData(List<dynamic> data) async {
-    int l = 22, r = 100;
+    int l = 22, r = 21;
     for (var ar in data) {
       int id = ar[2];
-      if (id >= l && id <= r) 
-      gameData.doc(id.toString()).set({
-        "id": id,
-        "name": ar[0],
-        "tags": ar[1],
-        "description": "",
-        "url": await gameImageUrlGen(id),
-      });
+      if (id >= l && id <= r) {
+        gameData.doc(id.toString()).set({
+          "id": id,
+          "name": ar[0],
+          "tags": ar[1],
+          "description": "",
+          "url": await gameImageUrlGen(id),
+        });
+      }
     }
   }
 
