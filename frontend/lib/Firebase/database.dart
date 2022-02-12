@@ -69,7 +69,6 @@ class Database {
     } catch (e) {
       return false;
     }
-    ;
   }
 
   void updateUserLikedGames(user currUser) async {
@@ -163,14 +162,15 @@ class Database {
   }
 
   Future<void> setFireStoreGameData(List<dynamic> data) async {
-    int l = 1, r = 21;
+    int l = 22, r = 100;
     for (var ar in data) {
       int id = ar[2];
+      if (id >= l && id <= r) 
       gameData.doc(id.toString()).set({
         "id": id,
         "name": ar[0],
         "tags": ar[1],
-        if (id >= l && id <= r) "description": "",
+        "description": "",
         "url": await gameImageUrlGen(id),
       });
     }
