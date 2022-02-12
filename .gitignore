@@ -1,6 +1,5 @@
 gcenv
 GC.txt
-backend/MLengine
 frontend/android/app/google-services.json
 backend/GamerCompanion/settings.py
 backend/GamerCompanion/__pycache__
